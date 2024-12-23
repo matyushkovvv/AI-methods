@@ -25,10 +25,13 @@ class NGramm:
         else:
             self.__ngramms_size = n_gramm
 
-        for index, filename in enumerate(os.listdir(path)):
-            print(f"[{index + 1}/{len(os.listdir(path))}] Train on {filename}")
+        print("Training...")
+        train_dir = os.path.join(path, 'train')
 
-            train_file = os.path.join(path, filename)
+        for index, filename in enumerate(os.listdir(train_dir)):
+            print(f"[{index + 1}/{len(os.listdir(train_dir))}] Train on {filename}")
+
+            train_file = os.path.join(train_dir, filename)
             if os.path.isfile(train_file):
                 with open(train_file, 'r', encoding='utf-8') as file:
                     text = re.sub(r'(?<=\w)-(?=\w)', ' ', file.read())
@@ -52,9 +55,9 @@ class NGramm:
     
 
     def predict(self, proposal, length_output = 3):
-
-        words = proposal.split() # что
-        context_length = len(words) # 1
+        
+        words = proposal.lower().split()
+        context_length = len(words)
 
         predicted_ngramms = Counter()
         for ngramm, count in self.__ngramms.items():
