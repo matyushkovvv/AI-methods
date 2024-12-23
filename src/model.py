@@ -1,5 +1,4 @@
 import os
-import nltk
 import re
 from nltk.tokenize import RegexpTokenizer
 from nltk.util import ngrams
@@ -8,6 +7,7 @@ from collections import Counter
 class NGramm:
     def __init__(self, load_path = None):
         self.__ngramms = Counter()
+        self.__ngramms_size = 0
         self.__vocab_size = 0
 
     def train(self, path, n_gramm = 3, stop_words = [
@@ -20,6 +20,11 @@ class NGramm:
     ]):
         tokenizer = RegexpTokenizer(r'\w+|[^\w\s]')
 
+        if n_gramm < 2:
+            self.__ngramms_size = 2
+        else:
+            self.__ngramms_size = n_gramm
+
         for index, filename in enumerate(os.listdir(path)):
             print(f"[{index + 1}/{len(os.listdir(path))}] Train on {filename}")
 
@@ -31,13 +36,13 @@ class NGramm:
                     tokens = tokenizer.tokenize(text.lower())
 
                     filtered_tokens = [token for token in tokens if token not in stop_words and not re.match(r'^\d+$', token)]
-                    file_n_grams = list(ngrams(filtered_tokens, n_gramm))
+                    file_n_grams = list(ngrams(filtered_tokens, self.__ngramms_size))
 
                     self.__ngramms.update(file_n_grams)
                     self.__vocab_size = len(set(tokens))
 
-        print("Saving " + str(n_gramm) + "-grams...")
-        with open(str(n_gramm) + '_grams.txt', 'w', encoding='utf-8') as file:
+        print("Saving " + str(self.__ngramms_size) + "-grams...")
+        with open(str(self.__ngramms_size) + '_grams.txt', 'w', encoding='utf-8') as file:
             for n_gram, count in self.__ngramms.items():
                 file.write(f"{' '.join(n_gram)}\t{count}\n")
 
@@ -46,15 +51,27 @@ class NGramm:
         return self.__ngramms
     
 
-    def predict(self, word, length_output = 3):
+    def predict(self, proposal, length_output = 3):
 
-        predicted_ngramms = []
+        words = proposal.split() # что
+        context_length = len(words) # 1
+
+        predicted_ngramms = Counter()
         for ngramm, count in self.__ngramms.items():
-            if word == ngramm[0]:
-                predicted_ngramms.append((ngramm, count))
+
+            flag = True
+            for index, word in enumerate(words):
+                if word != ngramm[index]:
+                    flag = False
+                    break
+            
+            if flag:
+                ngramm_length = context_length + 1
+                predicted_ngramms.update({ngramm[0:ngramm_length]: count})
+
+        predicted_ngramms = list(predicted_ngramms.items())
 
         predicted_ngramms.sort(key=lambda x: x[1], reverse=True)
         predicted_ngramms = predicted_ngramms[:length_output]
 
-        print(predicted_ngramms)
-
+        return predicted_ngramms
