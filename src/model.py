@@ -3,6 +3,7 @@ import re
 from nltk.tokenize import RegexpTokenizer
 from nltk.util import ngrams
 from collections import Counter
+import pickle
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
@@ -12,11 +13,30 @@ class NGramm:
         self.__ngramms_size = 0
         self.__vocab_size = 0
 
-    def save(self):
-        print("Saving " + str(self.__ngramms_size) + "-grams...")
-        with open(str(self.__ngramms_size) + '_grams.txt', 'w', encoding='utf-8') as file:
-            for n_gram, count in self.__ngramms.items():
-                file.write(f"{' '.join(n_gram)}\t{count}\n")
+    def save(self, save_path=None):
+        """Сохраняет модель в файл."""
+        if save_path is None:
+            save_path = f"{self.__ngramms_size}_grams.pkl"
+        print(f"Saving {self.__ngramms_size}-grams model to {save_path}...")
+        with open(save_path, 'wb') as file:
+            pickle.dump({
+                "ngramms": self.__ngramms,
+                "ngramms_size": self.__ngramms_size,
+                "vocab_size": self.__vocab_size
+            }, file)
+        print("Model saved successfully.")
+
+    def load(self, load_path):
+        """Загружает модель из файла."""
+        if not os.path.isfile(load_path):
+            raise FileNotFoundError(f"File {load_path} not found.")
+        print(f"Loading model from {load_path}...")
+        with open(load_path, 'rb') as file:
+            data = pickle.load(file)
+            self.__ngramms = data["ngramms"]
+            self.__ngramms_size = data["ngramms_size"]
+            self.__vocab_size = data["vocab_size"]
+        print("Model loaded successfully.")
 
     def __train(self, path, n_gramm, stop_words):
         
