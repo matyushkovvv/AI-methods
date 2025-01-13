@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 def start_gui(model, text_length):
-    """Функция для запуска GUI."""
     root = tk.Tk()
     root.title("Предсказание следующего слова")
 
@@ -24,15 +23,13 @@ def start_gui(model, text_length):
             recommendations.delete(1.0, tk.END)
             recommendations.insert(tk.END, "Введите текст для предсказания.")
 
-    # Поле для ввода текста
     text_input = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=50, height=5)
     text_input.grid(row=0, column=0, padx=10, pady=10, columnspan=2)
 
-    # Кнопка для получения предсказаний
+
     predict_button = tk.Button(root, text="Предсказать", command=predict_next_word)
     predict_button.grid(row=1, column=0, padx=10, pady=10)
 
-    # Поле для отображения рекомендаций
     recommendations = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=50, height=10, state=tk.NORMAL)
     recommendations.grid(row=2, column=0, padx=10, pady=10, columnspan=2)
 
